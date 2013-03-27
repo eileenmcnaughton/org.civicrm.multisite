@@ -87,6 +87,24 @@ function multisite_civicrm_validateForm( $formName, &$fields, &$files, &$form, &
     $form->setElementError('parents', NULL);
   }
 }
+
+/**
+ * Implemtation of hook civicrm_pre
+ * @param string $op
+ * @param string $objectName
+ * @param integer $id
+ * @param array $params
+ */
+function multisite_civicrm_pre( $op, $objectName, $id, &$params ){
+  // allow setting of org instead of parent
+  if($objectName == 'Group'){
+    if(!empty($params['organization_id']) && empty($params['parents'])){
+      $params['no_parent'] = 1;
+    }
+  }
+}
+
+
 /**
  *  * Implementation of hook_civicrm_post
  *
@@ -345,4 +363,43 @@ function _multisite_get_domain_group($permission = 1) {
     }
     return FALSE;
   }
+  /**
+   * Implements buildForm hook
+   * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
+   * @param string $formName
+   * @param object $form reference to the form object
+   */
+  function multisite_civicrm_buildForm( $formName, &$form ){
 
+    if($formName == 'CRM_Group_Form_Edit'){
+      _multisite_alter_form_crm_group_form_edit($formName, &$form);
+    }
+  }
+  /**
+  * Called from buildForm hook
+  * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
+  * @param string $formName
+  * @param object $form reference to the form object
+  */
+  function _multisite_alter_form_crm_group_form_edit($formName, &$form){
+    if(isset($form->_defaultValues['parents'])){
+      $parentOrgs = civicrm_api('group_organization', 'get', array(
+        'version' => 3,
+        'group_id' => $form->_defaultValues['parents'],
+        'return' => 'organization_id',
+        'sequential' => 1,
+        )
+      );
+      if($parentOrgs['count'] ==1){
+        $groupOrg = $parentOrgs['values'][0]['organization_id'];
+        $defaults['organization_id'] = $groupOrg;
+        $defaults['organization'] = civicrm_api('contact', 'getvalue', array(
+          'version' => 3,
+          'id' => $groupOrg,
+          'return' => 'display_name',
+        ));
+        $defaults['parents'] = "";
+        $form->setDefaults($defaults);
+      }
+    }
+  }
