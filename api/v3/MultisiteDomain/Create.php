@@ -68,7 +68,7 @@ function civicrm_api_multisite_unnest(){
 # ensure contacts are members of parent group
 #####
 INSERT INTO civicrm_group_contact (contact_id, group_id, `status`)
-SELECT child_group_contact.contact_id, domain_group.domain_group_id, 'Added'
+SELECT DISTINCT child_group_contact.contact_id, domain_group.domain_group_id, 'Added'
 FROM civicrm_group_organization go RIGHT JOIN (
 SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) AS domain_group_id,
 value, domain_id
