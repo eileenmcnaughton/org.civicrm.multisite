@@ -79,6 +79,35 @@ function civicrm_api_multisite_unnest(){
     g.id IS NOT NULL
     AND cgo.organization_id IS NULL
 ;
+### 
+# ensure contacts are members of parent group
+#####
+INSERT INTO civicrm_group_contact (contact_id, group_id, `status`)
+SELECT *
+FROM civicrm_group_organization go RIGHT JOIN (
+SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) AS domain_group_id,
+value, domain_id
+FROM civicrm_setting s
+WHERE group_name = 'Multi Site Preferences'
+AND name = 'domain_group_id'
+AND SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) > 0
+) as se
+ON se.domain_group_id = go.group_id
+LEFT JOIN civicrm_group g ON go.group_id = g.parents
+LEFT JOIN civicrm_group_organization cgo ON g.id = cgo.group_id
+LEFT JOIN civicrm_group_contact ch ON ch.group_id = g.id
+LEFT JOIN civicrm_group_contact cp ON se.domain_group_id = cp.group_id
+
+AND ch.contact_id = cp.contact_id
+
+
+WHERE
+g.id IS NOT NULL
+AND cgo.organization_id IS NULL
+AND cp.id IS NULL
+AND ch.id IS NOT NULL
+;
+
 
  DELETE gn FROM civicrm_group_nesting gn RIGHT JOIN (
     SELECT  SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) AS domain_group_id,
