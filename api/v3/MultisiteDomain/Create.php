@@ -62,23 +62,8 @@ function _civicrm_api3_multisite_domain_create_spec(&$params) {
  */
 function civicrm_api_multisite_unnest(){
   /*
-   * INSERT INTO civicrm_group_organization (group_id, organization_id)
-  SELECT  g.id as group_id, cgo.organization_id as organization_id
-  FROM civicrm_group_organization go RIGHT JOIN (
-    SELECT  SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) AS domain_group_id,
-	   value,     domain_id
-    FROM civicrm_setting s
-    WHERE group_name = 'Multi Site Preferences'
-      AND name = 'domain_group_id'
-      AND SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) > 0
-    ) as se
-  ON se.domain_group_id = go.group_id
-  LEFT JOIN civicrm_group g ON go.group_id = g.parents
-  LEFT JOIN civicrm_group_organization cgo ON g.id = cgo.group_id
-  WHERE
-    g.id IS NOT NULL
-    AND cgo.organization_id IS NULL
-;
+   * 
+   
 ### 
 # ensure contacts are members of parent group
 #####
@@ -132,7 +117,23 @@ AND child_group_contact.id IS NOT NULL
 
 ;
 
-
+    INSERT INTO civicrm_group_organization (group_id, organization_id)
+  SELECT  g.id as group_id, cgo.organization_id as organization_id
+  FROM civicrm_group_organization go RIGHT JOIN (
+    SELECT  SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) AS domain_group_id,
+	   value,     domain_id
+    FROM civicrm_setting s
+    WHERE group_name = 'Multi Site Preferences'
+      AND name = 'domain_group_id'
+      AND SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) > 0
+    ) as se
+  ON se.domain_group_id = go.group_id
+  LEFT JOIN civicrm_group g ON go.group_id = g.parents
+  LEFT JOIN civicrm_group_organization cgo ON g.id = cgo.group_id
+  WHERE
+    g.id IS NOT NULL
+    AND cgo.organization_id IS NULL
+;
 
  DELETE gn FROM civicrm_group_nesting gn RIGHT JOIN (
     SELECT  SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) AS domain_group_id,
@@ -168,7 +169,5 @@ AND child_group_contact.id IS NOT NULL
   SET children = NULL;
 
 truncate civicrm_cache;
-#SELECT * FROM civicrm_domain;
-*/
    */
 }
