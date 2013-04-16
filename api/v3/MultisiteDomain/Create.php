@@ -83,7 +83,7 @@ function civicrm_api_multisite_unnest(){
 # ensure contacts are members of parent group
 #####
 INSERT INTO civicrm_group_contact (contact_id, group_id, `status`)
-SELECT *
+SELECT child_group_contact.contact_id, domain_group.domain_group_id, 'Added'
 FROM civicrm_group_organization go RIGHT JOIN (
 SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) AS domain_group_id,
 value, domain_id
@@ -91,22 +91,47 @@ FROM civicrm_setting s
 WHERE group_name = 'Multi Site Preferences'
 AND name = 'domain_group_id'
 AND SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) > 0
-) as se
-ON se.domain_group_id = go.group_id
-LEFT JOIN civicrm_group g ON go.group_id = g.parents
-LEFT JOIN civicrm_group_organization cgo ON g.id = cgo.group_id
-LEFT JOIN civicrm_group_contact ch ON ch.group_id = g.id
-LEFT JOIN civicrm_group_contact cp ON se.domain_group_id = cp.group_id
-
-AND ch.contact_id = cp.contact_id
-
-
+) as domain_group
+ON domain_group.domain_group_id = go.group_id
+LEFT JOIN civicrm_group child_group ON go.group_id = child_group.parents
+LEFT JOIN civicrm_group_organization cgo ON child_group.id = cgo.group_id
+LEFT JOIN civicrm_group_contact child_group_contact ON child_group_contact.group_id = child_group.id AND child_group_contact.`status` = 'Added'
+LEFT JOIN civicrm_group_contact parent_group_contact ON domain_group.domain_group_id = parent_group_contact.group_id
+AND child_group_contact.contact_id = parent_group_contact.contact_id
 WHERE
-g.id IS NOT NULL
+child_group.id IS NOT NULL
 AND cgo.organization_id IS NULL
-AND cp.id IS NULL
-AND ch.id IS NOT NULL
+AND parent_group_contact.id IS NULL
+AND child_group_contact.id IS NOT NULL
 ;
+
+##
+# Set Status on parent group to reflect child group
+###
+UPDATE
+ civicrm_group_organization go RIGHT JOIN (
+  SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) AS domain_group_id,
+  value, domain_id
+  FROM civicrm_setting s
+  WHERE group_name = 'Multi Site Preferences'
+  AND name = 'domain_group_id'
+  AND SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) > 0
+  ) as domain_group
+ON domain_group.domain_group_id = go.group_id
+LEFT JOIN civicrm_group child_group ON go.group_id = child_group.parents
+LEFT JOIN civicrm_group_organization cgo ON child_group.id = cgo.group_id
+LEFT JOIN civicrm_group_contact child_group_contact ON child_group_contact.group_id = child_group.id AND child_group_contact.`status` = 'Added'
+LEFT JOIN civicrm_group_contact parent_group_contact ON domain_group.domain_group_id = parent_group_contact.group_id
+AND child_group_contact.contact_id = parent_group_contact.contact_id
+SET parent_group_contact.`status` = child_group_contact.`status`
+WHERE
+child_group.id IS NOT NULL
+AND cgo.organization_id IS NULL
+AND parent_group_contact.`status` <> 'Added'
+AND child_group_contact.id IS NOT NULL
+
+;
+
 
 
  DELETE gn FROM civicrm_group_nesting gn RIGHT JOIN (
