@@ -98,8 +98,15 @@ function multisite_civicrm_validateForm( $formName, &$fields, &$files, &$form, &
 function multisite_civicrm_pre( $op, $objectName, $id, &$params ){
   // allow setting of org instead of parent
   if($objectName == 'Group'){
-    if(!empty($params['organization_id']) && empty($params['parents'])){
+    if(empty($params['parents'])){
+      // if parents left empty we need to fill organization_id (if not filled)
+      // and set no parent. We don't want Civi doing this on our behalf
+      // as we assume admin users can make sensible choices on nesting
+      // & the default should be the org link
       $params['no_parent'] = 1;
+    }
+    if(empty($params['organization_id'])){
+      $params['organization_id'] = _multisite_get_domain_organization(TRUE);
     }
   }
 }
@@ -323,6 +330,21 @@ function _multisite_get_domain_group($permission = 1) {
     }
 
     return $groupID;
+  }
+/**
+ * get organization of domain group
+ */
+  function _multisite_get_domain_organization($permission = True){
+    $groupID =  _multisite_get_domain_group($permission);
+    if(empty($groupID)){
+      return FALSE;
+    }
+    return civicrm_api('group_organization', 'getvalue', array(
+        'version' => 3,
+        'group_id' => $groupID,
+        'return' => 'organization_id',
+      )
+    );
   }
 
   /**
