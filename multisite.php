@@ -293,18 +293,17 @@ AND    id IN ";
  * @return NULL|integer $groupID
  */
 function _multisite_get_domain_groups($groupID) {
-  $sql = " SELECT group_concat(o2.group_id) as groups
+  $sql = " SELECT o2.group_id as group_id
            FROM civicrm_group_organization o
            INNER JOIN civicrm_group_organization o2 ON o.organization_id = o2.organization_id
            AND o.group_id = $groupID AND o2.group_id <> $groupID
       ";
   $dao = CRM_Core_DAO::executeQuery($sql);
-  $dao->fetch();
-  if(empty($dao->groups)){
-    return array();
+  $groups = array();
+  while($dao->fetch()) {
+    $groups[] = (int) $dao->group_id;
   }
-
-  return explode(',',$dao->groups);//$groupIDs;
+  return $groups;
 }
 
 /**
