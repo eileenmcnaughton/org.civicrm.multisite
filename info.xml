@@ -19,6 +19,7 @@
   <compatibility>
     <ver>4.2</ver>
     <ver>4.3</ver>
+    <ver>4.4</ver>
   </compatibility>
   <comments>This is a port of the CiviCRM multisite module to an extension. You will need to review the changes in this version</comments>
   <civix>
