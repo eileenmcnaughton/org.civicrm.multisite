@@ -396,7 +396,7 @@ function _multisite_get_domain_group($permission = 1) {
   function multisite_civicrm_buildForm( $formName, &$form ){
 
     if($formName == 'CRM_Group_Form_Edit'){
-      _multisite_alter_form_crm_group_form_edit($formName, &$form);
+      _multisite_alter_form_crm_group_form_edit($formName, $form);
     }
   }
   /**
