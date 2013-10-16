@@ -167,7 +167,7 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
   if(!$groupID){
     return;
   }
-  if(!_multisite_add_permissions($type)){
+  if(!CRM_Core_Permission::check('list all groups in domain') && !_multisite_add_permissions($type)){
     return;
   }
   $currentGroups = _multisite_get_all_child_groups($groupID, FALSE);
@@ -215,6 +215,7 @@ function multisite_civicrm_permissions(&$permissions){
   $permissions = $permissions + array(
     'view all contacts in domain' => $prefix . ts('view all contacts in domain'),
     'edit all contacts in domain' => $prefix . ts('edit all contacts in domain'),
+    'list all groups in domain' => $prefix . ts('list all groups in domain'),
   );
 }
 
