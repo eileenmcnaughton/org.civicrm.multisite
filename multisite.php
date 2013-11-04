@@ -202,7 +202,8 @@ function multisite_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$cont
     $tables[$groupTable] = $whereTables[$groupTable] = "
       LEFT JOIN {$groupTable} multisiteGroupTable ON contact_a.id = multisiteGroupTable.contact_id
     ";
-    $where = "(multisiteGroupTable.group_id IN (" . implode(',', $childOrgs) . ") AND multisiteGroupTable.status IN ('Added') AND contact_a.is_deleted = 0)";
+    $deletedContactClause = CRM_Core_Permission::check('access deleted contacts') ? '' : 'AND contact_a.is_deleted = 0';
+    $where = "(multisiteGroupTable.group_id IN (" . implode(',', $childOrgs) . ") AND multisiteGroupTable.status IN ('Added') $deletedContactClause)";
   }
 }
 
