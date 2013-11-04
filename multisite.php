@@ -206,6 +206,23 @@ function multisite_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$cont
   }
 }
 
+function multisite_civicrm_tabs(&$tabs, $contactID ) {
+  $enabled = civicrm_api3('setting', 'getvalue', array('group' => 'multisite', 'name' => 'multisite_custom_tabs_restricted'));
+  if(!$enabled) {
+    return;
+  }
+  $tabs_visible = civicrm_api3('setting', 'getvalue', array('group' => 'multisite', 'name' => 'multisite_custom_tabs_enabled'));
+
+  foreach( $tabs as $id => $tab ) {
+    if (stristr($tab['id'], 'custom_')) {
+     $tab_id = str_replace('custom_', '', $tab['id']);
+     if (!in_array($tab_id, $tabs_visible)) {
+       unset($tabs[$id]);
+     }
+   }
+ }
+}
+
 /**
  *
  * @param array $permissions
