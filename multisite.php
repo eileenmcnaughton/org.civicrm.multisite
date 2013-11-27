@@ -83,10 +83,20 @@ function multisite_civicrm_managed(&$entities) {
  * Returns true if form validates successfully, otherwise array with input field names as keys and error message strings as values
 */
 function multisite_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ){
-  if(!empty($fields['organization_id']) && CRM_Core_Permission::check('administer Multiple Organizations')){
+  if((!isset($fields['organization_id']) && !empty($form->_entityId))) {
+    try{
+      //$fields['group_organization']
+      $fields['group_organization'] = civicrm_api3('group_organization', 'getvalue', array('group_id' => $form->_entityId, 'return' => 'id'));
+      $form->setElementError('parents', NULL);
+    }
+    catch (Exception $e) {
+    }
+  }
+  if(!empty($fields['organization_id']) || !empty($fields['group_organization'])) {
     $form->setElementError('parents', NULL);
   }
 }
+
 
 /**
  * Implemtation of hook civicrm_pre
