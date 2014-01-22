@@ -182,6 +182,11 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
   }
   $currentGroups = _multisite_get_all_child_groups($groupID, FALSE);
   $currentGroups = array_merge($currentGroups, _multisite_get_domain_groups($groupID));
+  if(!empty($allGroups)) {
+    //all groups is empty if we really mean all groups but if a filter like 'is_disabled' is already applied
+    // it is populated, ajax calls from Manage Groups will leave empty but calls from New Mailing pass in a filtered list
+    $currentGroups = array_intersect($currentGroups, array_flip($allGroups));
+  }
 }
 
 /**
