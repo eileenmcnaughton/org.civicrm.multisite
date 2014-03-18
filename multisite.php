@@ -240,10 +240,19 @@ function multisite_civicrm_tabs(&$tabs, $contactID ) {
 }
 
 /**
- *
+ * invoke permissions hook
+ * note that permissions hook is now permission hook
  * @param array $permissions
  */
 function multisite_civicrm_permissions(&$permissions){
+  multisite_civicrm_permission(&$permissions);
+}
+
+/**
+ * invoke permissions hook
+ * @param array $permissions
+ */
+function multisite_civicrm_permission(&$permissions){
   $prefix = ts('CiviCRM Multisite') . ': ';
   $permissions = $permissions + array(
     'view all contacts in domain' => $prefix . ts('view all contacts in domain'),
