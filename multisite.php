@@ -223,11 +223,11 @@ function multisite_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$cont
 }
 
 function multisite_civicrm_tabs(&$tabs, $contactID ) {
-  $enabled = civicrm_api3('setting', 'getvalue', array('group' => 'multisite', 'name' => 'multisite_custom_tabs_restricted'));
+  $enabled = civicrm_api3('setting', 'getvalue', array('group' => 'Multi Site Preferences', 'name' => 'multisite_custom_tabs_restricted'));
   if(!$enabled) {
     return;
   }
-  $tabs_visible = civicrm_api3('setting', 'getvalue', array('group' => 'multisite', 'name' => 'multisite_custom_tabs_enabled'));
+  $tabs_visible = civicrm_api3('setting', 'getvalue', array('group' => 'Multi Site Preferences', 'name' => 'multisite_custom_tabs_enabled'));
 
   foreach( $tabs as $id => $tab ) {
     if (stristr($tab['id'], 'custom_')) {
@@ -403,7 +403,7 @@ function _multisite_get_domain_group($permission = 1) {
    */
   function _multisite_add_permissions($type){
     $hookclass = 'CRM_Utils_Hook';
-    if(!method_exists($hookclass, 'permissions')){
+    if(!method_exists($hookclass, 'permissions') && !method_exists($hookclass, 'permission')){
       // ie. unpatched 4.2 so we can't check for extra declared permissions
       // & default to applying this to all
       return TRUE;
@@ -414,7 +414,7 @@ function _multisite_get_domain_group($permission = 1) {
     }
     // extra check to make sure that hook is properly implemented
     // if not we won't check for it. NB view all contacts in domain is enough checking
-    $declaredPermissions = CRM_Core_Permission::getCorePermissions();
+    $declaredPermissions = CRM_Core_Permission::basicPermissions();
     if(!array_key_exists('view all contacts in domain', $declaredPermissions)){
       return TRUE;
     }
