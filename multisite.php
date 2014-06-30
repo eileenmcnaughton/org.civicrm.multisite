@@ -246,7 +246,7 @@ function multisite_civicrm_tabs(&$tabs, $contactID ) {
  * @param array $permissions
  */
 function multisite_civicrm_permissions(&$permissions){
-  multisite_civicrm_permission(&$permissions);
+  multisite_civicrm_permission($permissions);
 }
 
 /**
