@@ -52,8 +52,13 @@ AND domain_group.domain_group_id IS NOT NULL
 AND child_group.parents NOT LIKE '%,%'
 ;
 
+###############################################################################################
+##
+##  associated all groups with same org as their parent (domain) org
+##
+###############################################################################################
 INSERT INTO civicrm_group_organization (group_id, organization_id)
-SELECT child_group.id as group_id, cgo.organization_id as organization_id
+SELECT child_group.id as group_id, go.organization_id as organization_id
 FROM civicrm_group_organization go RIGHT JOIN (
 SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(value,'";',1),':"',-1) AS domain_group_id,
 value, domain_id
