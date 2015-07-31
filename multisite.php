@@ -470,4 +470,6 @@ function _multisite_get_domain_group($permission = 1) {
         $form->setDefaults($defaults);
       }
     }
+    unset($form->_required[2]);
+    unset($form->_rules['parents']);
   }
