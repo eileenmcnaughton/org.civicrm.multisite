@@ -214,11 +214,12 @@ function multisite_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$cont
   $childOrgs = _multisite_get_all_child_groups($groupID);
   if (!empty($childOrgs)) {
     $groupTable = 'civicrm_group_contact';
-    $tables[$groupTable] = $whereTables[$groupTable] = "
-      LEFT JOIN {$groupTable} multisiteGroupTable ON contact_a.id = multisiteGroupTable.contact_id
+    $groupTableAlias = 'multisiteGroupTable';
+    $tables[$groupTableAlias] = $whereTables[$groupTableAlias] = "
+      LEFT JOIN {$groupTable} $groupTableAlias ON contact_a.id = {$groupTableAlias}.contact_id
     ";
     $deletedContactClause = CRM_Core_Permission::check('access deleted contacts') ? '' : 'AND contact_a.is_deleted = 0';
-    $where = "(multisiteGroupTable.group_id IN (" . implode(',', $childOrgs) . ") AND multisiteGroupTable.status IN ('Added') $deletedContactClause)";
+    $where = "(multisiteGroupTable.group_id IN (" . implode(',', $childOrgs) . ") AND {$groupTableAlias}.status IN ('Added') $deletedContactClause)";
   }
 }
 
@@ -245,7 +246,7 @@ function multisite_civicrm_tabs(&$tabs, $contactID ) {
  * @param array $permissions
  */
 function multisite_civicrm_permissions(&$permissions){
-  multisite_civicrm_permission(&$permissions);
+  multisite_civicrm_permission($permissions);
 }
 
 /**
@@ -468,5 +469,46 @@ function _multisite_get_domain_group($permission = 1) {
         $defaults['parents'] = "";
         $form->setDefaults($defaults);
       }
+    }
+    unset($form->_required[2]);
+    unset($form->_rules['parents']);
+  }
+
+  /**
+   * Implements hook_civicrm_alterAPIPermissions
+   * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterAPIPermissions
+   * @param string $entity
+   * @param string $action
+   * @param array &$params
+   * @param array &$permisions
+   */
+  function multisite_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
+    $domain_id = CRM_Core_Config::domainID();
+    if ($domain_id !== 1) {
+      $entities = array('address', 'email', 'phone', 'website', 'im', 'loc_block',
+        'entity_tag', 'note', 'relationship', 'group_contact',
+      );
+
+      foreach($entities as $entity) {
+        $permissions[$entity]['default'] = array(
+          'access CiviCRM',
+          'edit all contacts in domain',
+        );
+        
+        $permissions[$entity]['get'] = array(
+          'access CiviCRM',
+          'view all contacts in domain',
+        );
+      }
+
+      $permissions['relationship']['delete'] = array(
+        'access CiviCRM',
+        'edit all contacts in domain',
+      );
+
+      $permissions['contact']['update'] = array(
+        'access CiviCRM',
+        'edit all contacts in domain',
+      );
     }
   }
