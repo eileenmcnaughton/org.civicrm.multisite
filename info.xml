@@ -14,7 +14,7 @@
     <email>info@civicrm.org</email>
   </maintainer>
   <releaseDate>2014-06-20</releaseDate>
-  <version>2.4</version>
+  <version>v2.4</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>4.2</ver>
