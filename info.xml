@@ -14,13 +14,9 @@
     <email>info@civicrm.org</email>
   </maintainer>
   <releaseDate>2014-06-20</releaseDate>
-  <version>v2.4</version>
+  <version>2.4</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>4.2</ver>
-    <ver>4.3</ver>
-    <ver>4.4</ver>
-    <ver>4.5</ver>
     <ver>4.6</ver>
   </compatibility>
   <comments>This is a port of the CiviCRM multisite module to an extension. You will need to review the changes in this version</comments>
