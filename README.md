@@ -3,7 +3,7 @@
 
 This extension adds the ACLS that allow a contact to only see contacts and groups associated with the domain (by
 virtue of them being in the domain group - either directly or via a group connected to the same organisation).
-The domain group is configured through the administration menu within CiviCRM under System Settings/Multisite Settings. 
+The domain group is configured through the administration menu within CiviCRM under System Settings/Multisite Settings.
 
 Note that previous versions of the multisite extension made heavy use of Group Nesting. This is no longer recommended
 for performance reasons. Avoid group nesting where possible.
@@ -11,7 +11,9 @@ for performance reasons. Avoid group nesting where possible.
 === Adding new domains
 To add new domains use the MultisiteDomain.create api e.g
 
-drush cvapi MultisiteDomain.create debug=1 sequential=1 name="Bobita"
+drush cvapi MultisiteDomain.create debug=1 sequential=1 name="Bobita" is_transactional=0
+
+(That is_transactional should not be necessary but I haven't managed to make it unnecessary).
 
 You also need to ensure that the right domain ID is defined - e.g you could put something like this in your civicrm.settings.php
 

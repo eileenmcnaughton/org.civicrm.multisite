@@ -12,6 +12,7 @@
  * {@getfields domain_create}
  */
 function civicrm_api3_multisite_domain_create($params) {
+  $transaction = new CRM_Core_Transaction();
   if (empty($params['contact_id'])) {
     $params['contact_id'] = _civicrm_api3_multisite_domain_create_if_not_exists('Contact', array(
       'organization_name' => $params['name'],
@@ -38,19 +39,25 @@ function civicrm_api3_multisite_domain_create($params) {
     $domainGroupID = $params['group_id'];
   }
 
-  $fullParams['api.setting.create'] = array(
-    'is_enabled' => TRUE,
-    'domain_group_id' => $domainGroupID,
-  );
   _civicrm_api3_multisite_domain_create_if_not_exists('GroupOrganization', array(
     'group_id' => $domainGroupID,
     'organization_id' => $params['contact_id'],
   ));
 
   $domainID = _civicrm_api3_multisite_domain_create_if_not_exists('domain', $fullParams);
-  if (!civicrm_api3('Navigation', 'getcount', array('domain_id' => $domainID))) {
-    _civicrm_load_navigation($params['name']);
+  if (!$domainID || ($domainID != civicrm_api3('Domain', 'getvalue', array('name' => $params['name'], 'return' => 'id')))) {
+    throw new CiviCRM_API3_Exception('Failed to create domain', 'unknown');
   }
+
+  $transaction->commit();
+  if (!civicrm_api3('Navigation', 'getcount', array('domain_id' => $domainID))) {
+    _civicrm_load_navigation($params['name'], $domainID);
+  }
+  civicrm_api3('Setting', 'create', array(
+    'is_enabled' => TRUE,
+    'domain_group_id' => $domainGroupID,
+    'domain_id' => $domainID,
+  ));
   return civicrm_api3_create_success(array($domainID => array('id' => $domainID)));
 }
 
@@ -75,8 +82,9 @@ function _civicrm_api3_multisite_domain_create_if_not_exists($entity, $params) {
  * Load the navigation sql for the domain with the given name.
  *
  * @param string $domainName
+ * @param int $domainID
  */
-function _civicrm_load_navigation($domainName) {
+function _civicrm_load_navigation($domainName, $domainID) {
   global $civicrm_root;
 
   $sqlPath = $civicrm_root . DIRECTORY_SEPARATOR . 'sql';
@@ -85,7 +93,7 @@ function _civicrm_load_navigation($domainName) {
 
   //read the entire string
   $str = file_get_contents($sqlPath . DIRECTORY_SEPARATOR . 'civicrm_navigation.mysql');
-  $str = str_replace('Default Domain Name', $domainName, $str);
+  $str = str_replace('SELECT @domainID := id FROM civicrm_domain where name = \'Default Domain Name\'', "SELECT @domainID := $domainID", $str);
   file_put_contents($generatedFile, $str);
   CRM_Utils_File::sourceSQLFile($config->dsn,
     $generatedFile, NULL, FALSE
@@ -110,7 +118,12 @@ function _civicrm_api3_multisite_domain_create_spec(&$params) {
   );
   $params['contact_id'] = array(
     'title' => 'id of existing contact for domain',
-    'description' => 'If not populated another will be created using the name'
+    'description' => 'If not populated another will be created using the name',
+  );
+  $params['is_transactional'] = array(
+    'api.required' => 1,
+    'title' => 'Use transactions (must be FALSE)',
+    'description' => 'Set this to 0 or it will fail. Have not managed to do it within the api without the wrapper ignoring',
   );
 }
 /**
