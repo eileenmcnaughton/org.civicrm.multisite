@@ -89,7 +89,7 @@ function _civicrm_load_navigation($domainName, $domainID) {
 
   $sqlPath = $civicrm_root . DIRECTORY_SEPARATOR . 'sql';
   $config = CRM_Core_Config::singleton();
-  $generatedFile = $config->uploadDir . DIRECTORY_SEPARATOR . str_replace(' ', '_', $domainName) . 'nav.mysql';
+  $generatedFile = $config->uploadDir . DIRECTORY_SEPARATOR . str_replace(' ', '_', $domainName) . uniqid() . 'nav.mysql';
 
   //read the entire string
   $str = file_get_contents($sqlPath . DIRECTORY_SEPARATOR . 'civicrm_navigation.mysql');
