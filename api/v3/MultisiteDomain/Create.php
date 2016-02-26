@@ -98,6 +98,7 @@ function _civicrm_load_navigation($domainName, $domainID) {
   CRM_Utils_File::sourceSQLFile($config->dsn,
     $generatedFile, NULL, FALSE
   );
+  CRM_Utils_DAO::executeQuery("UPDATE civicrm_navigation SET label = name WHERE label = ''");
 }
 
 /**
