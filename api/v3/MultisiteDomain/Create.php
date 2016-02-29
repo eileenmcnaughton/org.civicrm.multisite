@@ -31,6 +31,8 @@ function civicrm_api3_multisite_domain_create($params) {
     $groupParams = array('title' => !empty($params['group_name']) ? $params['group_name'] : $params['name']);
     $group = civicrm_api3('Group', 'get', array_merge($groupParams, array('options' => array('limit' => 1))));
     if (empty($group['id'])) {
+      // Ideally would fix the api to be more consistent & not assume default but...
+      $groupParams['group_type'] = array(1 => 1);
       $group = civicrm_api3('Group', 'create', $groupParams);
     }
     $domainGroupID = $group['id'];
@@ -98,7 +100,7 @@ function _civicrm_load_navigation($domainName, $domainID) {
   CRM_Utils_File::sourceSQLFile($config->dsn,
     $generatedFile, NULL, FALSE
   );
-  CRM_Utils_DAO::executeQuery("UPDATE civicrm_navigation SET label = name WHERE label = ''");
+  CRM_Core_DAO::executeQuery("UPDATE civicrm_navigation SET label = name WHERE label = ''");
 }
 
 /**
