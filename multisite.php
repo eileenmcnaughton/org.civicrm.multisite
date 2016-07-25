@@ -459,9 +459,8 @@ function _multisite_get_domain_group($permission = 1) {
    * @param string $formName
    * @param object $form reference to the form object
    */
-  function multisite_civicrm_buildForm( $formName, &$form ){
-
-    if($formName == 'CRM_Group_Form_Edit'){
+  function multisite_civicrm_buildForm($formName, &$form){
+    if($formName == 'CRM_Group_Form_Edit' || $formName == 'CRM_Contact_Form_Task_SaveSearch'){
       _multisite_alter_form_crm_group_form_edit($formName, $form);
     }
   }
