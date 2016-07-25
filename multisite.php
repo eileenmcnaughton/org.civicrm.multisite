@@ -3,87 +3,92 @@
 require_once 'multisite.civix.php';
 
 /**
- * Implementation of hook_civicrm_config
+ * Implements hook_civicrm_config().
+ *
+ * @param CRM_Core_Config $config
  */
 function multisite_civicrm_config(&$config) {
   _multisite_civix_civicrm_config($config);
 }
 
 /**
- * Implementation of hook_civicrm_xmlMenu
+ * Implements hook_civicrm_xmlMenu().
  *
- * @param $files array(string)
+ * @param array $files
  */
 function multisite_civicrm_xmlMenu(&$files) {
   _multisite_civix_civicrm_xmlMenu($files);
 }
 
 /**
- * Implementation of hook_civicrm_install
+ * Implements hook_civicrm_install().
  */
 function multisite_civicrm_install() {
   return _multisite_civix_civicrm_install();
 }
 
 /**
- * Implementation of hook_civicrm_uninstall
+ * Implements hook_civicrm_uninstall().
  */
 function multisite_civicrm_uninstall() {
   return _multisite_civix_civicrm_uninstall();
 }
 
 /**
- * Implementation of hook_civicrm_enable
+ * Implements hook_civicrm_enable().
  */
 function multisite_civicrm_enable() {
   return _multisite_civix_civicrm_enable();
 }
 
 /**
- * Implementation of hook_civicrm_disable
+ * Implements hook_civicrm_disable().
  */
 function multisite_civicrm_disable() {
   return _multisite_civix_civicrm_disable();
 }
 
 /**
- * Implementation of hook_civicrm_upgrade
+ * Implements hook_civicrm_upgrade().
  *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
+ * @param string $op the type of operation being performed; 'check' or 'enqueue'
+ * @param CRM_Queue_Queue $queue (for 'enqueue') the modifiable list of pending up upgrade tasks
  *
- * @return mixed  based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
+ * @return mixed
+ *   based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
+ *   for 'enqueue', returns void
  */
 function multisite_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
   return _multisite_civix_civicrm_upgrade($op, $queue);
 }
 
 /**
- * Implementation of hook_civicrm_managed
+ * Implements hook_civicrm_managed().
  *
  * Generate a list of entities to create/deactivate/delete when this module
  * is installed, disabled, uninstalled.
+ *
+ * @param array $entities
  */
 function multisite_civicrm_managed(&$entities) {
-  return _multisite_civix_civicrm_managed($entities);
+  _multisite_civix_civicrm_managed($entities);
 }
 
 /**
- *  Implementation of hook_civicrm_validate_form
+ * Implements hook_civicrm_validate_form().
+ *
  *  Make parents optional for administrators when
  *  organization id is set
  *
- * Validation of forms. This hook was introduced in v4.2
  * @param string $formName - Name of the form being validated, you will typically switch off this value.
  * @param array  $fields - Array of name value pairs for all 'POST'ed form values
  * @param array  $files - Array of file properties as sent by PHP POST protocol
  * @param object   $form - Reference to the civicrm form object. This is useful if you want to retrieve any values that we've constructed in the form
  * @param array   $errors - Reference to the errors array. All errors will be added to this array
  * Returns true if form validates successfully, otherwise array with input field names as keys and error message strings as values
-*/
-function multisite_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ){
-  if((!isset($fields['organization_id']) && !empty($form->_entityId))) {
+ */
+function multisite_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  if ((!isset($fields['organization_id']) && !empty($form->_entityId))) {
     try{
       //$fields['group_organization']
       $fields['group_organization'] = civicrm_api3('group_organization', 'getvalue', array('group_id' => $form->_entityId, 'return' => 'id'));
@@ -92,53 +97,54 @@ function multisite_civicrm_validateForm( $formName, &$fields, &$files, &$form, &
     catch (Exception $e) {
     }
   }
-  if(!empty($fields['organization_id']) || !empty($fields['group_organization'])) {
+  if (!empty($fields['organization_id']) || !empty($fields['group_organization'])) {
     $form->setElementError('parents', NULL);
   }
 }
 
 
 /**
- * Implemtation of hook civicrm_pre
+ * Implements hook civicrm_pre().
+ *
  * @param string $op
  * @param string $objectName
- * @param integer $id
+ * @param int $id
  * @param array $params
  */
-function multisite_civicrm_pre( $op, $objectName, $id, &$params ){
+function multisite_civicrm_pre($op, $objectName, $id, &$params) {
   // allow setting of org instead of parent
-  if($objectName == 'Group'){
-    if(empty($params['parents'])){
+  if ($objectName == 'Group') {
+    if (empty($params['parents'])) {
       // if parents left empty we need to fill organization_id (if not filled)
       // and set no parent. We don't want Civi doing this on our behalf
       // as we assume admin users can make sensible choices on nesting
       // & the default should be the org link
       $params['no_parent'] = 1;
     }
-    if(empty($params['organization_id'])){
+    if (empty($params['organization_id'])) {
       $params['organization_id'] = _multisite_get_domain_organization(TRUE);
     }
   }
 }
 
-
 /**
- *  * Implementation of hook_civicrm_post
+ * Implements hook_civicrm_post().
  *
- * Current implemtation assumes shared user table for all sites -
+ * Current implementation assumes shared user table for all sites -
  * a more sophisticated version will be able to cope with a combination of shared user tables
  * and separate user tables
  *
  * @param string $op
  * @param string $objectName
- * @param integer $objectId
+ * @param int $objectId
  * @param object $objectRef
  */
 function multisite_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   if ($op == 'edit' && $objectName == 'UFMatch') {
     static $updating = FALSE;
     if ($updating) {
-      return; // prevent recursion
+      // prevent recursion
+      return;
     }
     $updating = TRUE;
     $ufs = civicrm_api('uf_match', 'get', array(
@@ -146,22 +152,24 @@ function multisite_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       'contact_id' => $objectRef->contact_id,
       'uf_id' => $objectRef->uf_id,
       'id' => array(
-        '!=' => $objectRef->id
+        '!=' => $objectRef->id,
       )
     ));
     foreach ($ufs['values'] as $ufMatch) {
       civicrm_api('UFMatch', 'create', array(
         'version' => 3,
         'id' => $ufMatch['id'],
-        'uf_name' => $objectRef->uf_name
+        'uf_name' => $objectRef->uf_name,
       ));
     }
   }
 }
 /**
- * Implements ACLGroup hook
+ * Implements ACLGroup hook().
+ *
  * aclGroup function returns a list of groups which are either children of the
  * domain group id or connected to the same organisation as the domain Group ID
+ *
  * @param string $type
  * @param integer $contactID
  * @param string $tableName
@@ -211,18 +219,26 @@ function multisite_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$cont
   if(!$groupID){
     return;
   }
-  $childOrgs = _multisite_get_all_child_groups($groupID);
-  if (!empty($childOrgs)) {
+  $childOrganizations = _multisite_get_all_child_groups($groupID);
+  if (!empty($childOrganizations)) {
     $groupTable = 'civicrm_group_contact';
     $groupTableAlias = 'multisiteGroupTable';
     $tables[$groupTableAlias] = $whereTables[$groupTableAlias] = "
       LEFT JOIN {$groupTable} $groupTableAlias ON contact_a.id = {$groupTableAlias}.contact_id
     ";
     $deletedContactClause = CRM_Core_Permission::check('access deleted contacts') ? '' : 'AND contact_a.is_deleted = 0';
-    $where = "(multisiteGroupTable.group_id IN (" . implode(',', $childOrgs) . ") AND {$groupTableAlias}.status IN ('Added') $deletedContactClause)";
+    $where = "(multisiteGroupTable.group_id IN (" . implode(',', $childOrganizations) . ") AND {$groupTableAlias}.status IN ('Added') $deletedContactClause)";
   }
 }
 
+/**
+ * Add site specific tabs.
+ *
+ * @param array $tabs
+ * @param int $contactID
+ *
+ * @throws \CiviCRM_API3_Exception
+ */
 function multisite_civicrm_tabs(&$tabs, $contactID ) {
   $enabled = civicrm_api3('setting', 'getvalue', array('group' => 'Multi Site Preferences', 'name' => 'multisite_custom_tabs_restricted'));
   if(!$enabled) {
@@ -263,7 +279,7 @@ function multisite_civicrm_permission(&$permissions){
 }
 
 /**
- * Implementation of hook_civicrm_config
+ * Implements hook_civicrm_config().
  */
 function multisite_civicrm_alterSettingsFolders(&$metaDataFolders = NULL){
   _multisite_civix_civicrm_alterSettingsFolders($metaDataFolders);
@@ -363,7 +379,7 @@ function _multisite_get_domain_group($permission = 1) {
       */
       return NULL;
     }
-    // We will check for the possiblility of the acl_enabled setting being deliberately set to 0
+    // We will check for the possibility of the acl_enabled setting being deliberately set to 0
     if($permission){
      $aclsEnabled = civicrm_api('setting', 'getvalue', array(
       'version' => 3,
@@ -393,15 +409,19 @@ function _multisite_get_domain_group($permission = 1) {
     );
   }
 
-  /**
-   * Should we be adding ACLs in this instance. If we don't add them the user
-   * will not be able to see anything. We check if the install has the permissions
-   * hook implemented correctly & if so only allow view & edit based on those.
-   *
-   * Otherwise all users get these permissions added (4.2 vs 4.3 / other CMS issues)
-   *
-   * @param integer $type type of operation
-   */
+/**
+ * Should we be adding ACLs in this instance.
+ *
+ * If we don't add them the user will not be able to see anything.
+ * We check if the install has the permissions
+ * hook implemented correctly & if so only allow view & edit based on those.
+ *
+ * Otherwise all users get these permissions added (4.2 vs 4.3 / other CMS issues)
+ *
+ * @param integer $type type of operation
+ *
+ * @return bool
+ */
   function _multisite_add_permissions($type){
     $hookclass = 'CRM_Utils_Hook';
     if(!method_exists($hookclass, 'permissions') && !method_exists($hookclass, 'permission')){
@@ -431,8 +451,10 @@ function _multisite_get_domain_group($permission = 1) {
     }
     return FALSE;
   }
+
   /**
-   * Implements buildForm hook
+   * Implements buildForm hook().
+   *
    * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
    * @param string $formName
    * @param object $form reference to the form object
@@ -444,8 +466,10 @@ function _multisite_get_domain_group($permission = 1) {
     }
   }
   /**
-  * Called from buildForm hook
+  * Called from buildForm hook.
+   *
   * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
+   *
   * @param string $formName
   * @param object $form reference to the form object
   */
@@ -475,7 +499,8 @@ function _multisite_get_domain_group($permission = 1) {
   }
 
   /**
-   * Implements hook_civicrm_alterAPIPermissions
+   * Implements hook_civicrm_alterAPIPermissions().
+   *
    * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterAPIPermissions
    * @param string $entity
    * @param string $action
@@ -494,7 +519,7 @@ function _multisite_get_domain_group($permission = 1) {
           'access CiviCRM',
           'edit all contacts in domain',
         );
-        
+
         $permissions[$entity]['get'] = array(
           'access CiviCRM',
           'view all contacts in domain',
