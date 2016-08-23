@@ -282,7 +282,12 @@ function multisite_civicrm_permission(&$permissions){
  * Implements hook_civicrm_permission_check().
  */
 function multisite_civicrm_permission_check($permission, &$granted) {
-  if (CRM_Core_BAO_Setting::getItem('Multi Site Preferences', 'is_enabled') == 0) {
+  $isEnabled = civicrm_api('setting', 'getvalue', array(
+      'version' => 3,
+      'name' => 'is_enabled',
+      'group' => 'Multi Site Preferences')
+  );
+  if ($isEnabled == 0) {
     // Multisite ACLs are not enabled, so 'view all contacts in domain' cascades to 'view all contacts'
     // and the same is true for 'edit all contacts' - cf. CRM-19256
     if ($permission == 'view all contacts' && CRM_Core_Permission::check('view all contacts in domain')) {
