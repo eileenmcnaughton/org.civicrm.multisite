@@ -279,7 +279,22 @@ function multisite_civicrm_permission(&$permissions){
 }
 
 /**
- * Implements hook_civicrm_config().
+ * Implements hook_civicrm_permission_check().
+ */
+function multisite_civicrm_permission_check($permission, &$granted) {
+  if (CRM_Core_BAO_Setting::getItem('Multi Site Preferences', 'multisite_acl_enabled') == 0) {
+    // Multisite ACLs are not enabled, so 'view all contacts in domain' cascades to 'view all contacts'
+    // and the same is true for 'edit all contacts' - cf. CRM-19256
+    if ($permission == 'view all contacts' && CRM_Core_Permission::check('view all contacts in domain')) {
+      $granted = TRUE;
+    } elseif ($permission == 'edit all contacts' && CRM_Core_Permission::check('edit all contacts in domain')) {
+      $granted = TRUE;
+    }
+  }
+}
+
+/**
+ * Implements hook_civicrm_alterSettingsFolders().
  */
 function multisite_civicrm_alterSettingsFolders(&$metaDataFolders = NULL){
   _multisite_civix_civicrm_alterSettingsFolders($metaDataFolders);
