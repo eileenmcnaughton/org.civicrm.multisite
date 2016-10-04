@@ -181,8 +181,15 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
   if ($tableName != 'civicrm_saved_search') {
     return;
   }
+  $isEnabled = civicrm_api('setting', 'getvalue', array(
+      'version' => 3,
+      'name' => 'is_enabled',
+      'group' => 'Multi Site Preferences')
+  );
   $groupID = _multisite_get_domain_group();
-  if(!$groupID){
+  // If multisite is not enabled, or if a domain group is not selected, then we default to all groups allowed
+  if (!$isEnabled || !$groupID){
+    $currentGroups = array_flip($allGroups);
     return;
   }
   if(!CRM_Core_Permission::check('list all groups in domain') && !_multisite_add_permissions($type)){
