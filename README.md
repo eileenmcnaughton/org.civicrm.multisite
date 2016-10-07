@@ -10,13 +10,13 @@ for performance reasons. Avoid group nesting where possible.
 
 === Adding new domains
 To add new domains use the MultisiteDomain.create api e.g
-
+```php
 drush cvapi MultisiteDomain.create debug=1 sequential=1 name="Bobita" is_transactional=0
-
+```
 (That is_transactional should not be necessary but I haven't managed to make it unnecessary).
 
 You also need to ensure that the right domain ID is defined - e.g you could put something like this in your civicrm.settings.php
-
+```php
  switch ($url) {
     case 'http://site1.org':
       define( 'CIVICRM_DOMAIN_ID', 1 );
@@ -33,4 +33,4 @@ You also need to ensure that the right domain ID is defined - e.g you could put 
     default:
       echo "The world just fell apart";
    }
-
+```
