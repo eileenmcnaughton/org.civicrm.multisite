@@ -4,8 +4,6 @@ require_once 'multisite.civix.php';
 
 /**
  * Implements hook_civicrm_config().
- *
- * @param CRM_Core_Config $config
  */
 function multisite_civicrm_config(&$config) {
   _multisite_civix_civicrm_config($config);
@@ -13,8 +11,6 @@ function multisite_civicrm_config(&$config) {
 
 /**
  * Implements hook_civicrm_xmlMenu().
- *
- * @param array $files
  */
 function multisite_civicrm_xmlMenu(&$files) {
   _multisite_civix_civicrm_xmlMenu($files);
@@ -50,13 +46,6 @@ function multisite_civicrm_disable() {
 
 /**
  * Implements hook_civicrm_upgrade().
- *
- * @param string $op the type of operation being performed; 'check' or 'enqueue'
- * @param CRM_Queue_Queue $queue (for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed
- *   based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *   for 'enqueue', returns void
  */
 function multisite_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
   return _multisite_civix_civicrm_upgrade($op, $queue);
@@ -64,11 +53,6 @@ function multisite_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
 
 /**
  * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- *
- * @param array $entities
  */
 function multisite_civicrm_managed(&$entities) {
   _multisite_civix_civicrm_managed($entities);
@@ -81,11 +65,11 @@ function multisite_civicrm_managed(&$entities) {
  *  organization id is set
  *
  * @param string $formName - Name of the form being validated, you will typically switch off this value.
- * @param array  $fields - Array of name value pairs for all 'POST'ed form values
- * @param array  $files - Array of file properties as sent by PHP POST protocol
- * @param object   $form - Reference to the civicrm form object. This is useful if you want to retrieve any values that we've constructed in the form
- * @param array   $errors - Reference to the errors array. All errors will be added to this array
- * Returns true if form validates successfully, otherwise array with input field names as keys and error message strings as values
+ * @param array $fields - Array of name value pairs for all 'POST'ed form values
+ * @param array $files - Array of file properties as sent by PHP POST protocol
+ * @param object $form - Reference to the civicrm form object. This is useful if you want to retrieve any values that we've constructed in the form
+ * @param array $errors - Reference to the errors array. All errors will be added to this array
+ * Returns TRUE if form validates successfully, otherwise array with input field names as keys and error message strings as values
  */
 function multisite_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   if ((!isset($fields['organization_id']) && !empty($form->_entityId))) {
@@ -153,7 +137,7 @@ function multisite_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       'uf_id' => $objectRef->uf_id,
       'id' => array(
         '!=' => $objectRef->id,
-      )
+      ),
     ));
     foreach ($ufs['values'] as $ufMatch) {
       civicrm_api('UFMatch', 'create', array(
@@ -171,7 +155,7 @@ function multisite_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  * domain group id or connected to the same organisation as the domain Group ID
  *
  * @param string $type
- * @param integer $contactID
+ * @param int $contactID
  * @param string $tableName
  * @param array $allGroups
  * @param array $currentGroups
@@ -188,11 +172,11 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
   );
   $groupID = _multisite_get_domain_group();
   // If multisite is not enabled, or if a domain group is not selected, then we default to all groups allowed
-  if (!$isEnabled || !$groupID){
+  if (!$isEnabled || !$groupID) {
     $currentGroups = array_flip($allGroups);
     return;
   }
-  if(!CRM_Core_Permission::check('list all groups in domain') && !_multisite_add_permissions($type)){
+  if (!CRM_Core_Permission::check('list all groups in domain') && !_multisite_add_permissions($type)) {
     return;
   }
   $currentGroups = _multisite_get_all_child_groups($groupID, FALSE);
@@ -207,7 +191,7 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
   foreach ($disabled['values'] as $group) {
     $disabledGroups[] = $group['id'];
   }
-  if(!empty($allGroups)) {
+  if (!empty($allGroups)) {
     //all groups is empty if we really mean all groups but if a filter like 'is_disabled' is already applied
     // it is populated, ajax calls from Manage Groups will leave empty but calls from New Mailing pass in a filtered list
     $originalCurrentGroups = $currentGroups;
@@ -221,21 +205,21 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
  * @param string $type
  * @param array $tables tables to be included in query
  * @param array $whereTables tables required for where portion of query
- * @param integer $contactID contact for whom where clause is being composed
+ * @param int $contactID contact for whom where clause is being composed
  * @param string $where Where clause The completed clause will look like
  *   (multisiteGroupTable.group_id IN ("1,2,3,4,5") AND multisiteGroupTable.status IN ('Added') AND contact_a.is_deleted = 0)
  *   where the child groups are groups the contact is potentially a member of
  *
  */
 function multisite_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$contactID, &$where) {
-  if (! $contactID) {
+  if (!$contactID) {
     return;
   }
-  if(!_multisite_add_permissions($type)){
+  if (!_multisite_add_permissions($type)) {
     return;
   }
   $groupID = _multisite_get_domain_group();
-  if(!$groupID){
+  if (!$groupID) {
     return;
   }
   $childOrganizations = _multisite_get_all_child_groups($groupID);
@@ -258,21 +242,21 @@ function multisite_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$cont
  *
  * @throws \CiviCRM_API3_Exception
  */
-function multisite_civicrm_tabs(&$tabs, $contactID ) {
+function multisite_civicrm_tabs(&$tabs, $contactID) {
   $enabled = civicrm_api3('setting', 'getvalue', array('group' => 'Multi Site Preferences', 'name' => 'multisite_custom_tabs_restricted'));
-  if(!$enabled) {
+  if (!$enabled) {
     return;
   }
   $tabs_visible = civicrm_api3('setting', 'getvalue', array('group' => 'Multi Site Preferences', 'name' => 'multisite_custom_tabs_enabled'));
 
-  foreach( $tabs as $id => $tab ) {
+  foreach ($tabs as $id => $tab) {
     if (stristr($tab['id'], 'custom_')) {
-     $tab_id = str_replace('custom_', '', $tab['id']);
-     if (!in_array($tab_id, $tabs_visible)) {
-       unset($tabs[$id]);
-     }
-   }
- }
+      $tab_id = str_replace('custom_', '', $tab['id']);
+      if (!in_array($tab_id, $tabs_visible)) {
+        unset($tabs[$id]);
+      }
+    }
+  }
 }
 
 /**
@@ -280,7 +264,7 @@ function multisite_civicrm_tabs(&$tabs, $contactID ) {
  * note that permissions hook is now permission hook
  * @param array $permissions
  */
-function multisite_civicrm_permissions(&$permissions){
+function multisite_civicrm_permissions(&$permissions) {
   multisite_civicrm_permission($permissions);
 }
 
@@ -288,7 +272,7 @@ function multisite_civicrm_permissions(&$permissions){
  * invoke permissions hook
  * @param array $permissions
  */
-function multisite_civicrm_permission(&$permissions){
+function multisite_civicrm_permission(&$permissions) {
   $prefix = ts('CiviCRM Multisite') . ': ';
   $permissions = $permissions + array(
     'view all contacts in domain' => $prefix . ts('view all contacts in domain'),
@@ -311,7 +295,8 @@ function multisite_civicrm_permission_check($permission, &$granted) {
     // and the same is true for 'edit all contacts' - cf. CRM-19256
     if ($permission == 'view all contacts' && CRM_Core_Permission::check('view all contacts in domain')) {
       $granted = TRUE;
-    } elseif ($permission == 'edit all contacts' && CRM_Core_Permission::check('edit all contacts in domain')) {
+    }
+    elseif ($permission == 'edit all contacts' && CRM_Core_Permission::check('edit all contacts in domain')) {
       $granted = TRUE;
     }
   }
@@ -320,7 +305,7 @@ function multisite_civicrm_permission_check($permission, &$granted) {
 /**
  * Implements hook_civicrm_alterSettingsFolders().
  */
-function multisite_civicrm_alterSettingsFolders(&$metaDataFolders = NULL){
+function multisite_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _multisite_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
@@ -328,14 +313,14 @@ function multisite_civicrm_alterSettingsFolders(&$metaDataFolders = NULL){
  * Get all groups that are children of the parent group
  * (iterate through all levels)
  *
- * @param integer $groupID
- * @param boolean $includeParent
+ * @param int $groupID
+ * @param bool $includeParent
  * @return array:child groups
  */
 function _multisite_get_all_child_groups($groupID, $includeParent = TRUE) {
   static $_cache = array();
 
-  if (! array_key_exists($groupID, $_cache)) {
+  if (!array_key_exists($groupID, $_cache)) {
     $childGroups = &CRM_Core_BAO_Cache::getItem('descendant groups for an org', $groupID);
 
     if (empty($childGroups)) {
@@ -347,13 +332,13 @@ FROM   civicrm_group
 WHERE  children IS NOT NULL
 AND    id IN ";
 
-      if (! is_array($groupID)) {
+      if (!is_array($groupID)) {
         $groupIDs = array(
-          $groupID
+          $groupID,
         );
       }
 
-      while (! empty($groupIDs)) {
+      while (!empty($groupIDs)) {
         $groupIDString = implode(',', $groupIDs);
 
         $realQuery = $query . " ( $groupIDString )";
@@ -363,7 +348,7 @@ AND    id IN ";
           if ($dao->children) {
             $childIDs = explode(',', $dao->children);
             foreach ($childIDs as $childID) {
-              if (! array_key_exists($childID, $childGroups)) {
+              if (!array_key_exists($childID, $childGroups)) {
                 $childGroups[$childID] = 1;
                 $groupIDs[] = $childID;
               }
@@ -379,7 +364,7 @@ AND    id IN ";
 
   if ($includeParent || CRM_Core_Permission::check('administer Multiple Organizations')) {
     return array_keys(array(
-      $groupID => 1
+      $groupID => 1,
     ) + $_cache[$groupID]);
   }
   else {
@@ -389,7 +374,7 @@ AND    id IN ";
 /**
  * Get groups linked to the domain via the group organization
  * being shared with the domain group
- * @return NULL|integer $groupID
+ * @return NULL|int $groupID
  */
 function _multisite_get_domain_groups($groupID) {
   $sql = " SELECT o2.group_id as group_id
@@ -399,7 +384,7 @@ function _multisite_get_domain_groups($groupID) {
       ";
   $dao = CRM_Core_DAO::executeQuery($sql);
   $groups = array();
-  while($dao->fetch()) {
+  while ($dao->fetch()) {
     $groups[] = (int) $dao->group_id;
   }
   return $groups;
@@ -407,46 +392,46 @@ function _multisite_get_domain_groups($groupID) {
 
 /**
  *
- * @return NULL|integer $groupID
+ * @return NULL|int $groupID
  */
 function _multisite_get_domain_group($permission = 1) {
-    $groupID = CRM_Core_BAO_Domain::getGroupId();
-    if(empty($groupID) || !is_numeric($groupID)){
-      /* domain group not defined - we could let people know but
-       * it is acceptable for some domains not to be in the multisite
-      * so should probably check enabled before we spring an error
-      */
-      return NULL;
-    }
-    // We will check for the possibility of the acl_enabled setting being deliberately set to 0
-    if($permission){
-     $aclsEnabled = civicrm_api('setting', 'getvalue', array(
+  $groupID = CRM_Core_BAO_Domain::getGroupId();
+  if (empty($groupID) || !is_numeric($groupID)) {
+    /* domain group not defined - we could let people know but
+     * it is acceptable for some domains not to be in the multisite
+     * so should probably check enabled before we spring an error
+     */
+    return NULL;
+  }
+  // We will check for the possibility of the acl_enabled setting being deliberately set to 0
+  if ($permission) {
+    $aclsEnabled = civicrm_api('setting', 'getvalue', array(
       'version' => 3,
       'name' => 'multisite_acl_enabled',
       'group' => 'Multi Site Preferences')
-     );
-     if(is_numeric($aclsEnabled) && !$aclsEnabled){
-       return NULL;
-     }
+    );
+    if (is_numeric($aclsEnabled) && !$aclsEnabled) {
+      return NULL;
     }
-
-    return $groupID;
   }
+
+  return $groupID;
+}
+
 /**
  * get organization of domain group
  */
-  function _multisite_get_domain_organization($permission = True){
-    $groupID =  _multisite_get_domain_group($permission);
-    if(empty($groupID)){
-      return FALSE;
-    }
-    return civicrm_api('group_organization', 'getvalue', array(
-        'version' => 3,
-        'group_id' => $groupID,
-        'return' => 'organization_id',
-      )
-    );
+function _multisite_get_domain_organization($permission = TRUE) {
+  $groupID = _multisite_get_domain_group($permission);
+  if (empty($groupID)) {
+    return FALSE;
   }
+  return civicrm_api('group_organization', 'getvalue', array(
+    'version' => 3,
+    'group_id' => $groupID,
+    'return' => 'organization_id',
+  ));
+}
 
 /**
  * Should we be adding ACLs in this instance.
@@ -457,121 +442,119 @@ function _multisite_get_domain_group($permission = 1) {
  *
  * Otherwise all users get these permissions added (4.2 vs 4.3 / other CMS issues)
  *
- * @param integer $type type of operation
+ * @param int $type type of operation
  *
  * @return bool
  */
-  function _multisite_add_permissions($type){
-    $hookclass = 'CRM_Utils_Hook';
-    if(!method_exists($hookclass, 'permissions') && !method_exists($hookclass, 'permission')){
-      // ie. unpatched 4.2 so we can't check for extra declared permissions
-      // & default to applying this to all
-      return TRUE;
-    }
-    if($type == 'group'){
-      // @fixme only handling we have for this at the moment
-      return TRUE;
-    }
-    // extra check to make sure that hook is properly implemented
-    // if not we won't check for it. NB view all contacts in domain is enough checking
-    $declaredPermissions = CRM_Core_Permission::basicPermissions();
-    if(!array_key_exists('view all contacts in domain', $declaredPermissions)){
-      return TRUE;
-    }
-
-    if(CRM_ACL_BAO_ACL::matchType($type, 'View') &&
-      CRM_Core_Permission::check('view all contacts in domain')) {
-      return TRUE;
-    }
-
-    if(CRM_ACL_BAO_ACL::matchType($type, 'Edit') &&
-      CRM_Core_Permission::check('edit all contacts in domain')) {
-      return TRUE;
-    }
-    return FALSE;
+function _multisite_add_permissions($type) {
+  $hookclass = 'CRM_Utils_Hook';
+  if (!method_exists($hookclass, 'permissions') && !method_exists($hookclass, 'permission')) {
+    // ie. unpatched 4.2 so we can't check for extra declared permissions
+    // & default to applying this to all
+    return TRUE;
+  }
+  if ($type == 'group') {
+    // @fixme only handling we have for this at the moment
+    return TRUE;
+  }
+  // extra check to make sure that hook is properly implemented
+  // if not we won't check for it. NB view all contacts in domain is enough checking
+  $declaredPermissions = CRM_Core_Permission::basicPermissions();
+  if (!array_key_exists('view all contacts in domain', $declaredPermissions)) {
+    return TRUE;
   }
 
-  /**
-   * Implements buildForm hook().
-   *
-   * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
-   * @param string $formName
-   * @param object $form reference to the form object
-   */
-  function multisite_civicrm_buildForm($formName, &$form){
-    if($formName == 'CRM_Group_Form_Edit' || $formName == 'CRM_Contact_Form_Task_SaveSearch'){
-      _multisite_alter_form_crm_group_form_edit($formName, $form);
-    }
+  if (CRM_ACL_BAO_ACL::matchType($type, 'View') && CRM_Core_Permission::check('view all contacts in domain')) {
+    return TRUE;
   }
-  /**
-  * Called from buildForm hook.
-   *
-  * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
-   *
-  * @param string $formName
-  * @param object $form reference to the form object
-  */
-  function _multisite_alter_form_crm_group_form_edit($formName, &$form){
-    if(isset($form->_defaultValues['parents'])){
-      $parentOrgs = civicrm_api('group_organization', 'get', array(
+
+  if (CRM_ACL_BAO_ACL::matchType($type, 'Edit') && CRM_Core_Permission::check('edit all contacts in domain')) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implements buildForm hook().
+ *
+ * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
+ * @param string $formName
+ * @param object $form reference to the form object
+ */
+function multisite_civicrm_buildForm($formName, &$form) {
+  if ($formName == 'CRM_Group_Form_Edit' || $formName == 'CRM_Contact_Form_Task_SaveSearch') {
+    _multisite_alter_form_crm_group_form_edit($formName, $form);
+  }
+}
+
+/**
+ * Called from buildForm hook.
+ *
+ * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
+ *
+ * @param string $formName
+ * @param object $form reference to the form object
+ */
+function _multisite_alter_form_crm_group_form_edit($formName, &$form) {
+  if (isset($form->_defaultValues['parents'])) {
+    $parentOrgs = civicrm_api('group_organization', 'get', array(
+      'version' => 3,
+      'group_id' => $form->_defaultValues['parents'],
+      'return' => 'organization_id',
+      'sequential' => 1,
+    ));
+    if ($parentOrgs['count'] == 1) {
+      $groupOrg = $parentOrgs['values'][0]['organization_id'];
+      $defaults['organization_id'] = $groupOrg;
+      $defaults['organization'] = civicrm_api('contact', 'getvalue', array(
         'version' => 3,
-        'group_id' => $form->_defaultValues['parents'],
-        'return' => 'organization_id',
-        'sequential' => 1,
-        )
-      );
-      if($parentOrgs['count'] ==1){
-        $groupOrg = $parentOrgs['values'][0]['organization_id'];
-        $defaults['organization_id'] = $groupOrg;
-        $defaults['organization'] = civicrm_api('contact', 'getvalue', array(
-          'version' => 3,
-          'id' => $groupOrg,
-          'return' => 'display_name',
-        ));
-        $defaults['parents'] = "";
-        $form->setDefaults($defaults);
-      }
+        'id' => $groupOrg,
+        'return' => 'display_name',
+      ));
+      $defaults['parents'] = "";
+      $form->setDefaults($defaults);
     }
-    unset($form->_required[2]);
-    unset($form->_rules['parents']);
   }
+  unset($form->_required[2]);
+  unset($form->_rules['parents']);
+}
 
-  /**
-   * Implements hook_civicrm_alterAPIPermissions().
-   *
-   * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterAPIPermissions
-   * @param string $entity
-   * @param string $action
-   * @param array &$params
-   * @param array &$permisions
-   */
-  function multisite_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
-    $domain_id = CRM_Core_Config::domainID();
-    if ($domain_id !== 1) {
-      $entities = array('address', 'email', 'phone', 'website', 'im', 'loc_block',
-        'entity_tag', 'relationship', 'group_contact',
-      );
+/**
+ * Implements hook_civicrm_alterAPIPermissions().
+ *
+ * http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterAPIPermissions
+ * @param string $entity
+ * @param string $action
+ * @param array &$params
+ * @param array &$permissions
+ */
+function multisite_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
+  $domain_id = CRM_Core_Config::domainID();
+  if ($domain_id !== 1) {
+    $entities = array('address', 'email', 'phone', 'website', 'im', 'loc_block',
+      'entity_tag', 'relationship', 'group_contact',
+    );
 
-      foreach($entities as $entity) {
-        $permissions[$entity]['default'] = array(
-          'access CiviCRM',
-          'edit all contacts in domain',
-        );
-
-        $permissions[$entity]['get'] = array(
-          'access CiviCRM',
-          'view all contacts in domain',
-        );
-      }
-
-      $permissions['relationship']['delete'] = array(
+    foreach ($entities as $entity) {
+      $permissions[$entity]['default'] = array(
         'access CiviCRM',
         'edit all contacts in domain',
       );
 
-      $permissions['contact']['update'] = array(
+      $permissions[$entity]['get'] = array(
         'access CiviCRM',
-        'edit all contacts in domain',
+        'view all contacts in domain',
       );
     }
+
+    $permissions['relationship']['delete'] = array(
+      'access CiviCRM',
+      'edit all contacts in domain',
+    );
+
+    $permissions['contact']['update'] = array(
+      'access CiviCRM',
+      'edit all contacts in domain',
+    );
   }
+}
