@@ -197,10 +197,22 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
   }
   $currentGroups = _multisite_get_all_child_groups($groupID, FALSE);
   $currentGroups = array_merge($currentGroups, _multisite_get_domain_groups($groupID));
+  $disabledGroups = array();
+  $disabled = civicrm_api3('group', 'get', array(
+    'is_active' => 0,
+    'check_permissions' => FALSE,
+    'return' => 'id',
+    'sequential' => 1,
+    'options' => array('limit' => 0)));
+  foreach ($disabled['values'] as $group) {
+    $disabledGroups[] = $group['id'];
+  }
   if(!empty($allGroups)) {
     //all groups is empty if we really mean all groups but if a filter like 'is_disabled' is already applied
-    // it is populated, ajax calls from Manage Groups will leave empty but calls from New Mailing pass in a filtered list
+    // it is populated, ajax calls from Manage Groups will leave empty but calls from New Mailing pass in a filtered listi
+    $originalCurrentGroups = $currentGroups;
     $currentGroups = array_intersect($currentGroups, array_flip($allGroups));
+    $currentGroups = array_merge($currentGroups, array_intersect($originalCurrentGroups, $disabledGroups));
   }
 }
 
@@ -537,7 +549,7 @@ function _multisite_get_domain_group($permission = 1) {
     $domain_id = CRM_Core_Config::domainID();
     if ($domain_id !== 1) {
       $entities = array('address', 'email', 'phone', 'website', 'im', 'loc_block',
-        'entity_tag', 'note', 'relationship', 'group_contact',
+        'entity_tag', 'relationship', 'group_contact',
       );
 
       foreach($entities as $entity) {
