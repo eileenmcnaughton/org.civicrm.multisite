@@ -201,6 +201,48 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
 }
 
 /**
+ * Implements selectWhereClause hook().
+ *
+ * selectWhereClause restricts group selection to those which are either
+ * children of the domain group id or connected to the same organisation as the
+ * domain Group ID
+ *
+ * @param string $entity
+ * @param array $clauses
+ */
+function multisite_civicrm_selectWhereClause($entity, &$clauses) {
+  // Only process groups, only without "view all contacts" permission.
+  if ($entity != 'Group' || !(_multisite_is_permission()) || CRM_Core_Permission::check('view all contacts')) {
+    return;
+  }
+
+  $isEnabled = civicrm_api('setting', 'getvalue', array(
+    'version' => 3,
+    'name' => 'is_enabled',
+    'group' => 'Multi Site Preferences',
+  ));
+  $groupID = _multisite_get_domain_group();
+  // If multisite is not enabled, or if a domain group is not selected, then we default to all groups allowed
+  if (!$isEnabled || !$groupID) {
+    return;
+  }
+  if (!CRM_Core_Permission::check('list all groups in domain') && !_multisite_add_permissions($type)) {
+    return;
+  }
+  $currentGroups = _multisite_get_all_child_groups($groupID, FALSE);
+  $currentGroups = array_merge($currentGroups, _multisite_get_domain_groups($groupID));
+
+  $groups_list = array_unique($currentGroups);
+
+  // Don't crash if there's no groups....
+  if (empty($groups_list)) {
+    $groups_list = array(0);
+  }
+
+  $clauses['id'][] = 'IN (' . implode(',', $groups_list) . ')';
+}
+
+/**
  *
  * @param string $type
  * @param array $tables tables to be included in query
@@ -529,6 +571,8 @@ function _multisite_alter_form_crm_group_form_edit($formName, &$form) {
  * @param array &$permissions
  */
 function multisite_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
+  _multisite_is_permission(TRUE);
+
   $domain_id = CRM_Core_Config::domainID();
   if ($domain_id !== 1) {
     $entities = array('address', 'email', 'phone', 'website', 'im', 'loc_block',
@@ -556,5 +600,31 @@ function multisite_civicrm_alterAPIPermissions($entity, $action, &$params, &$per
       'access CiviCRM',
       'edit all contacts in domain',
     );
+  }
+}
+
+/**
+ * Are we checking if we are in multisite permission
+ * @param bool $check
+ * @return bool
+ */
+function _multisite_is_permission($check = NULL) {
+  static $checking = FALSE;
+
+  if (isset($check)) {
+    $checking = $check;
+  }
+
+  return $checking;
+}
+
+/**
+ * Add in mailing API wrapper
+ * @param array $wrappers
+ * @param array $apiRequest
+ */
+function multisite_civicrm_apiWrappers(&$wrappers, $apiRequest) {
+  if ($apiRequest['entity'] == 'Mailing' && $apiRequest['action'] == 'getlist') {
+    $wrappers[] = new CRM_Multisite_MailingWrapper();
   }
 }
