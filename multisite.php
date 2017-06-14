@@ -585,10 +585,7 @@ function multisite_civicrm_alterAPIPermissions($entity, $action, &$params, &$per
         'edit all contacts in domain',
       );
 
-      $permissions[$entity]['get'] = array(
-        'access CiviCRM',
-        'view all contacts in domain',
-      );
+      $permissions[$entity]['get'] = array('access CiviCRM');
     }
 
     $permissions['relationship']['delete'] = array(
