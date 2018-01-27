@@ -173,7 +173,7 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
   $groupID = _multisite_get_domain_group();
   // If multisite is not enabled, or if a domain group is not selected, then we default to all groups allowed
   if (!$isEnabled || !$groupID) {
-    $currentGroups = array_flip($allGroups);
+    $currentGroups = array_keys($allGroups);
     return;
   }
   if (!CRM_Core_Permission::check('list all groups in domain') && !_multisite_add_permissions($type)) {
@@ -195,7 +195,7 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
     //all groups is empty if we really mean all groups but if a filter like 'is_disabled' is already applied
     // it is populated, ajax calls from Manage Groups will leave empty but calls from New Mailing pass in a filtered list
     $originalCurrentGroups = $currentGroups;
-    $currentGroups = array_intersect($currentGroups, array_flip($allGroups));
+    $currentGroups = array_intersect($currentGroups, array_keys($allGroups));
     $currentGroups = array_merge($currentGroups, array_intersect($originalCurrentGroups, $disabledGroups));
   }
 }
