@@ -59,6 +59,22 @@ function multisite_civicrm_managed(&$entities) {
 }
 
 /**
+ * Implements hook_civicrm_container().
+ */
+function multisite_civicrm_container(\Symfony\Component\DependencyInjection\ContainerBuilder $container) {
+  $container->setDefinition("cache.decendantGroups", new Symfony\Component\DependencyInjection\Definition(
+    'CRM_Utils_Cache_Interface',
+    [
+      [
+        'name' => 'descendant groups for an org',
+        'type' => ['*memory*', 'SqlGroup', 'ArrayCache'],
+      ],
+    ]
+  ))->setFactory('CRM_Utils_Cache::create');
+}
+
+
+/**
  * Implements hook_civicrm_validate_form().
  *
  *  Make parents optional for administrators when
@@ -362,8 +378,9 @@ function multisite_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 function _multisite_get_all_child_groups($groupID, $includeParent = TRUE) {
   static $_cache = array();
 
+  $cache = Civi::cache('decendantGroups');
   if (!array_key_exists($groupID, $_cache)) {
-    $childGroups = &CRM_Core_BAO_Cache::getItem('descendant groups for an org', $groupID);
+    $childGroups = $cache->getItem($groupID);
 
     if (empty($childGroups)) {
       $childGroups = array();
@@ -399,7 +416,7 @@ AND    id IN ";
         }
       }
 
-      CRM_Core_BAO_Cache::setItem($childGroups, 'descendant groups for an org', $groupID);
+      $cache->setItem($groupID, $childGroups);
     }
     $_cache[$groupID] = $childGroups;
   }
