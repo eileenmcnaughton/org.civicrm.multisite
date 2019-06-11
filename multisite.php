@@ -66,13 +66,12 @@ function multisite_civicrm_container(\Symfony\Component\DependencyInjection\Cont
     'CRM_Utils_Cache_Interface',
     [
       [
-        'name' => 'descendant groups for an org',
+        'name' => 'descendant groups for org',
         'type' => ['*memory*', 'SqlGroup', 'ArrayCache'],
       ],
     ]
   ))->setFactory('CRM_Utils_Cache::create');
 }
-
 
 /**
  * Implements hook_civicrm_validate_form().
@@ -101,7 +100,6 @@ function multisite_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     $form->setElementError('parents', NULL);
   }
 }
-
 
 /**
  * Implements hook civicrm_pre().
