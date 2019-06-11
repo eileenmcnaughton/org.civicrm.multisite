@@ -13,12 +13,11 @@
     <author>CiviCRM LLC</author>
     <email>info@civicrm.org</email>
   </maintainer>
-  <releaseDate>2018-01-27</releaseDate>
-  <version>2.6</version>
+  <releaseDate>2019-06-11</releaseDate>
+  <version>2.7</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>4.6</ver>
-    <ver>4.7</ver>
+    <ver>5.15</ver>
   </compatibility>
   <comments>This is a port of the CiviCRM multisite module to an extension. You will need to review the changes in this version</comments>
   <civix>
