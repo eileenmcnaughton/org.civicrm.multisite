@@ -378,7 +378,7 @@ function _multisite_get_all_child_groups($groupID, $includeParent = TRUE) {
 
   $cache = Civi::cache('decendantGroups');
   if (!array_key_exists($groupID, $_cache)) {
-    $childGroups = $cache->getItem($groupID);
+    $childGroups = $cache->get($groupID);
 
     if (empty($childGroups)) {
       $childGroups = array();
@@ -414,7 +414,7 @@ AND    id IN ";
         }
       }
 
-      $cache->setItem($groupID, $childGroups);
+      $cache->set($groupID, $childGroups);
     }
     $_cache[$groupID] = $childGroups;
   }
