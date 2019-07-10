@@ -68,6 +68,7 @@ function multisite_civicrm_container(\Symfony\Component\DependencyInjection\Cont
       [
         'name' => 'descendant groups for org',
         'type' => ['*memory*', 'SqlGroup', 'ArrayCache'],
+        'withArray' => 'fast',
       ],
     ]
   ))->setFactory('CRM_Utils_Cache::create');
