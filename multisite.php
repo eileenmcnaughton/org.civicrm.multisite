@@ -613,6 +613,11 @@ function multisite_civicrm_alterAPIPermissions($entity, $action, &$params, &$per
       'access CiviCRM',
       'edit all contacts in domain',
     );
+
+    $permissions['group_contact']['delete'] = array(
+      'access CiviCRM',
+      'edit all contacts in domain',
+    );
   }
 }
 
