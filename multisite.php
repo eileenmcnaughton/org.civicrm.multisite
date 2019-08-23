@@ -641,3 +641,22 @@ function multisite_civicrm_apiWrappers(&$wrappers, $apiRequest) {
     $wrappers[] = new CRM_Multisite_MailingWrapper();
   }
 }
+
+/**
+ * Implements hook_civicrm_alterEntityRefParams().
+ *
+ * Alters Entity reference api params for MembershipType to ignore any domain_id filter
+ * So that the current behaviour continues
+ */
+function multisite_civicrm_alterEntityRefParams(&$props = [], $formName) {
+  if ($props['entity'] = 'MembershipType') {
+    if (!empty($props['api'])) {
+      if (!empty($props['api']['params'])) {
+        $props['api']['params']['domain_id'] = NULL;
+      }
+    }
+    else {
+      $props['api'] = ['params' => ['domain_id' => NULL]];
+    }
+  }
+}
