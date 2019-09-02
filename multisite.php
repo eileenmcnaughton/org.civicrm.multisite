@@ -655,11 +655,11 @@ function multisite_civicrm_alterEntityRefParams(&$props = [], $formName) {
         $props['api']['params']['domain_id'] = NULL;
       }
       else {
-        $props['api']['params'] = ['domain_id' => NULL]];
+        $props['api']['params'] = ['domain_id' => NULL];
       }
     }
     else {
-      $props['api'] = ['params' => ['domain_id' => NULL]];
+      $props['api'] = ['params' => ['domain_id' => NULL];
     }
   }
 }
