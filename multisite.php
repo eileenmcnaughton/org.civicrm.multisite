@@ -658,7 +658,7 @@ function multisite_civicrm_apiWrappers(&$wrappers, $apiRequest) {
  * So that the current behaviour continues
  */
 function multisite_civicrm_alterEntityRefParams(&$props = [], $formName) {
-  if ($props['entity'] = 'MembershipType') {
+  if ($props['entity'] == 'MembershipType') {
     if (!empty($props['api'])) {
       if (!empty($props['api']['params'])) {
         $props['api']['params']['domain_id'] = NULL;
