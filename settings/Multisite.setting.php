@@ -72,5 +72,17 @@ return array(
     'is_contact' => 0,
     'description' => 'Array of tabs which should be visible on this site',
     'help_text' => 'Enabled Custom Tabs',
-  ),
- );
+   ),
+   'multisite_not_use_temp_table' => [
+    'group_name' => 'Multi Site Preferences',
+    'group' => 'multisite',
+    'name' => 'multisite_not_use_temp_table',
+    'type' => 'Boolean',
+    'default' => 0,
+    'add' => '5.20',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'Should we disable the use of temporary tables when building ACL permissions for roles with view all contacts in domain or edit all contacts in domain',
+    'html' => 'Checkbox',
+  ],
+);

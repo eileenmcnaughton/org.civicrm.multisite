@@ -282,6 +282,10 @@ function multisite_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$cont
     return;
   }
   $childOrganizations = _multisite_get_all_child_groups($groupID);
+  // We have view all contacts in domain or edit all contacts in domain so lets not use a temporary table.
+  if ((CRM_Core_Permission::check('view all contacts in domain') || CRM_Core_Permission::check('edit all contacts in domain')) && Civi::Settings()->get('multisite_not_use_temp_table')) {
+    CRM_Contact_BAO_Contact_Permission::setUseTemporaryTable(FALSE);
+  }
   if (!empty($childOrganizations)) {
     $groupTable = 'civicrm_group_contact';
     $groupTableAlias = 'multisiteGroupTable';
