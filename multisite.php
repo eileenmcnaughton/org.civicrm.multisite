@@ -381,6 +381,7 @@ function multisite_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 function _multisite_get_all_child_groups($groupID, $includeParent = TRUE) {
   static $_cache = array();
 
+  $groupID = (string) $groupID;
   $cache = Civi::cache('decendantGroups');
   if (!array_key_exists($groupID, $_cache)) {
     $childGroups = $cache->get($groupID);
@@ -509,12 +510,6 @@ function _multisite_get_domain_organization($permission = TRUE) {
  * @return bool
  */
 function _multisite_add_permissions($type) {
-  $hookclass = 'CRM_Utils_Hook';
-  if (!method_exists($hookclass, 'permissions') && !method_exists($hookclass, 'permission')) {
-    // ie. unpatched 4.2 so we can't check for extra declared permissions
-    // & default to applying this to all
-    return TRUE;
-  }
   if ($type == 'group') {
     // @fixme only handling we have for this at the moment
     return TRUE;
