@@ -232,7 +232,7 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
  */
 function multisite_civicrm_selectWhereClause($entity, &$clauses) {
   // Only process groups, only without "view all contacts" permission.
-  if ($entity != 'Group' || !(_multisite_is_permission()) || CRM_Core_Permission::check('view all contacts')) {
+  if ($entity !== 'Group' || !(_multisite_is_permission()) || CRM_Core_Permission::check('view all contacts')) {
     return;
   }
 
@@ -338,11 +338,11 @@ function multisite_civicrm_permissions(&$permissions) {
  * @param array $permissions
  */
 function multisite_civicrm_permission(&$permissions) {
-  $permissions = $permissions + array(
+  $permissions += [
     'view all contacts in domain' => E::ts('CiviCRM Multisite: view all contacts in domain'),
     'edit all contacts in domain' => E::ts('CiviCRM Multisite: edit all contacts in domain'),
     'list all groups in domain' => E::ts('CiviCRM Multisite: list all groups in domain'),
-  );
+  ];
 }
 
 /**
@@ -357,10 +357,10 @@ function multisite_civicrm_permission_check($permission, &$granted) {
   if ($isEnabled == 0) {
     // Multisite ACLs are not enabled, so 'view all contacts in domain' cascades to 'view all contacts'
     // and the same is true for 'edit all contacts' - cf. CRM-19256
-    if ($permission == 'view all contacts' && CRM_Core_Permission::check('view all contacts in domain')) {
+    if ($permission === 'view all contacts' && CRM_Core_Permission::check('view all contacts in domain')) {
       $granted = TRUE;
     }
-    elseif ($permission == 'edit all contacts' && CRM_Core_Permission::check('edit all contacts in domain')) {
+    elseif ($permission === 'edit all contacts' && CRM_Core_Permission::check('edit all contacts in domain')) {
       $granted = TRUE;
     }
   }
@@ -433,9 +433,7 @@ AND    id IN ";
       $groupID => 1,
     ) + $_cache[$groupID]);
   }
-  else {
-    return array_keys($_cache[$groupID]);
-  }
+  return array_keys($_cache[$groupID]);
 }
 
 /**
