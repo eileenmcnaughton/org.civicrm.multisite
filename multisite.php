@@ -165,6 +165,7 @@ function multisite_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     }
   }
 }
+
 /**
  * Implements ACLGroup hook().
  *
@@ -176,6 +177,8 @@ function multisite_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  * @param string $tableName
  * @param array $allGroups
  * @param array $currentGroups
+ *
+ * @throws \CiviCRM_API3_Exception
  */
 function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, &$currentGroups) {
   // only process saved search
@@ -206,7 +209,7 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
     'sequential' => 1,
     'options' => array('limit' => 0)));
   foreach ($disabled['values'] as $group) {
-    $disabledGroups[] = $group['id'];
+    $disabledGroups[] = (int) $group['id'];
   }
   if (!empty($allGroups)) {
     //all groups is empty if we really mean all groups but if a filter like 'is_disabled' is already applied
@@ -434,10 +437,14 @@ AND    id IN ";
     return array_keys($_cache[$groupID]);
   }
 }
+
 /**
  * Get groups linked to the domain via the group organization
  * being shared with the domain group
- * @return NULL|int $groupID
+ *
+ * @param $groupID
+ *
+ * @return array
  */
 function _multisite_get_domain_groups($groupID) {
   $sql = " SELECT o2.group_id as group_id
@@ -455,9 +462,11 @@ function _multisite_get_domain_groups($groupID) {
 
 /**
  *
+ * @param bool $permission
+ *
  * @return NULL|int $groupID
  */
-function _multisite_get_domain_group($permission = 1) {
+function _multisite_get_domain_group($permission = TRUE) {
   $groupID = CRM_Core_BAO_Domain::getGroupId();
   if (empty($groupID) || !is_numeric($groupID)) {
     /* domain group not defined - we could let people know but
@@ -478,18 +487,22 @@ function _multisite_get_domain_group($permission = 1) {
     }
   }
 
-  return $groupID;
+  return (int) $groupID;
 }
 
 /**
- * get organization of domain group
+ * Get organization of domain group.
+ *
+ * @param bool $permission
+ *
+ * @return bool|int
  */
 function _multisite_get_domain_organization($permission = TRUE) {
   $groupID = _multisite_get_domain_group($permission);
-  if (empty($groupID)) {
+  if (!$groupID) {
     return FALSE;
   }
-  return civicrm_api('group_organization', 'getvalue', array(
+  return (int) civicrm_api('group_organization', 'getvalue', array(
     'version' => 3,
     'group_id' => $groupID,
     'return' => 'organization_id',
@@ -510,7 +523,7 @@ function _multisite_get_domain_organization($permission = TRUE) {
  * @return bool
  */
 function _multisite_add_permissions($type) {
-  if ($type == 'group') {
+  if ($type === 'group') {
     // @fixme only handling we have for this at the moment
     return TRUE;
   }
