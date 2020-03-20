@@ -539,11 +539,11 @@ function _multisite_add_permissions($type) {
     return TRUE;
   }
 
-  if (CRM_ACL_BAO_ACL::matchType($type, 'View') && CRM_Core_Permission::check('view all contacts in domain')) {
+  if ($type == CRM_ACL_API::VIEW && CRM_Core_Permission::check('view all contacts in domain')) {
     return TRUE;
   }
 
-  if (CRM_ACL_BAO_ACL::matchType($type, 'Edit') && CRM_Core_Permission::check('edit all contacts in domain')) {
+  if (($type == CRM_ACL_API::VIEW || $type == CRM_ACL_API::EDIT) && CRM_Core_Permission::check('edit all contacts in domain')) {
     return TRUE;
   }
   return FALSE;
