@@ -73,7 +73,7 @@ function multisite_civicrm_container(\Symfony\Component\DependencyInjection\Cont
         'withArray' => 'fast',
       ],
     ]
-  ))->setFactory('CRM_Utils_Cache::create');
+  ))->setFactory('CRM_Utils_Cache::create')->setPublic(TRUE);
 }
 
 /**
