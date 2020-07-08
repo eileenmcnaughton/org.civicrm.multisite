@@ -200,7 +200,7 @@ function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, 
   if (!CRM_Core_Permission::check('list all groups in domain') && !_multisite_add_permissions($type)) {
     return;
   }
-  $currentGroups = _multisite_get_all_child_groups($groupID, FALSE);
+  $currentGroups = array_merge($currentGroups ?? [], _multisite_get_all_child_groups($groupID, FALSE));
   $currentGroups = array_merge($currentGroups, _multisite_get_domain_groups($groupID));
   $disabledGroups = [];
   $disabled = civicrm_api3('group', 'get', [
